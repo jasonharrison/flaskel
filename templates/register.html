@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block title %}Register{% endblock %}
+{% block content %}
+    <form action="" method="POST">
+        {{ form.csrf_token }}
+        {% if form.csrf_token.errors %}
+            <h1>You have submitted an invalid CSRF token</h1>
+        {% endif %}
+        <dl>
+            {{ render_field(form.name) }}
+            {{ render_field(form.username) }}
+            {{ render_field(form.password) }}
+            {{ render_field(form.confirm) }}
+        </dl>
+        <input type="submit" value="Register"></form>
+    </form>
+{% endblock %}

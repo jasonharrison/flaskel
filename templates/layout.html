@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8;">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+<div id="container">
+    <div style="position: relative; top: 0px; right: 15px; text-align: right;">
+        {% if 'userid' in session %}
+            Logged in as {{ session['userid'] }} | <a href="/ah/Logout">Logout</a>
+        {% else %}
+            <a href="/ah/Login?next={{ request.path | route_from }}">Login</a>
+        {% endif %}
+    </div>
+    <div id="content">
+        <div id="main-content">
+            <div id="menu-bar">
+                <span id="menu-options"></span>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class=flashes>
+                            {% for message in messages %}
+                                <li style="border:1px solid #FF0000;background-color:#FFDDDD">{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div id="header-container"><h3 id="header">{% block h1 %}{% endblock %}</h3></div>
+            <div id="text">
+                {% block content %}
+                {% endblock %}
+                <p align="center">
+
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
