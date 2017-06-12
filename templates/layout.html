@@ -8,7 +8,7 @@
 <div id="container">
     <div style="position: relative; top: 0px; right: 15px; text-align: right;">
         {% if 'userid' in session %}
-            Logged in as {{ session['userid'] }} | <a href="/ah/Logout">Logout</a>
+            Logged in as {{ g.user['name'] }} | <a href="/ah/Logout">Logout</a>
         {% else %}
             <a href="/ah/Login?next={{ request.path | route_from }}">Login</a>
         {% endif %}

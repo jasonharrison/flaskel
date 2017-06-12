@@ -1,5 +1,5 @@
 import ast, urllib
-from flask import Flask, request, abort, session, redirect, url_for, render_template, flash
+from flask import Flask, request, abort, session, redirect, url_for, render_template, flash, g
 from flask.globals import _app_ctx_stack, _request_ctx_stack
 from werkzeug.urls import url_parse
 from werkzeug.routing import BuildError
@@ -8,6 +8,8 @@ from wtforms.csrf.session import SessionCSRF
 from datetime import timedelta
 from passlib.context import CryptContext
 from functools import wraps
+
+no_redir = [None, 'login', 'register']
 
 app = Flask(__name__)
 app.secret_key = 'changeme'
@@ -79,6 +81,13 @@ def route_from(url, method=None):
     return ast.literal_eval(str(url_adapter.match(parsed_url.path, method)))[0]  # there has to be a better way to do this
 
 
+@app.before_request
+@db_session
+def get_user():
+    if session.has_key('userid'):
+        g.user = Account.get(id=session['userid'])
+
+
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -96,7 +105,7 @@ def requires_auth(f):
 @app.route("/ah/Login", methods=['GET', 'POST'])
 @db_session
 def login():
-    next = request.args.get('next') if request.args.get('next') is not None else 'index'
+    next = request.args.get('next') if (request.args.get('next') not in no_redir) else 'index'
     try:
         next_url = url_for(next)
     except BuildError:
@@ -106,19 +115,19 @@ def login():
         c = Account.get(username=form.username.data)
         if not c:
             flash("Incorrect username or password.")
-            return render_template("login.html", form=form)
+            return render_template("login.html", form=form, next=next)
         if not pwd_context.verify(form.password.data, c.password):
             flash("Incorrect username or password.")
-            return render_template("login.html", form=form)
+            return render_template("login.html", form=form, next=next)
         session['userid'] = c.id
         return redirect(next_url)
     else:
-        return render_template("login.html", form=form)
+        return render_template("login.html", form=form, next=next)
 
 
 @app.route("/ah/Logout")
 def logout():
-    next = request.args.get('next') if request.args.get('next') is not None else 'index'
+    next = request.args.get('next') if (request.args.get('next') not in no_redir) else 'index'
     try:
         next_url = url_for(next)
     except BuildError:
@@ -131,13 +140,19 @@ def logout():
 @app.route("/ah/Register", methods=['GET', 'POST'])
 @db_session
 def register():
+    next = request.args.get('next') if (request.args.get('next') not in no_redir) else 'index'
+    try:
+        next_url = url_for(next)
+    except BuildError:
+        return abort(404, "Could not build url for endpoint.")
     form = RegisterForm(request.form, meta={'csrf_context': session})
     if request.method == "POST" and form.validate():
         hash = pwd_context.encrypt(form.password.data)
         c = Account(name=form.name.data, username=form.username.data.lower(), password=hash)
         commit()
+        session['userid'] = c.id
         flash("You have successfully registered.")
-        return render_template("register.html", form=form)
+        return redirect(next_url)
     else:
         return render_template("register.html", form=form)
 

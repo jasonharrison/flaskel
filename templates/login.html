@@ -13,5 +13,9 @@
         </dl>
         <input type="submit" value="Login"></form>
     </form>
+    {% if next != 'index' %}
+    <a href="{{ url_for('register') }}?next={{ next }}">Register</a>
+    {% else %}
     <a href="{{ url_for('register') }}">Register</a>
+    {% endif %}
 {% endblock %}
