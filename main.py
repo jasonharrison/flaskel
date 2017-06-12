@@ -161,10 +161,7 @@ def register():
 @requires_auth
 @db_session
 def index():
-    c = Account.get(id=session['userid'])
-    if not c:
-        return redirect(url_for('logout'))
-    return "Hello, " + c.name
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

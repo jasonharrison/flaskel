@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <p>Hello, {{ g.user['name'] }}</p>
+{% endblock %}
